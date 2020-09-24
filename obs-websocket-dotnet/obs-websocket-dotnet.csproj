@@ -3,12 +3,14 @@
     <TargetFramework>net46</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <Version>4.8.0</Version>
-    <Copyright>Copyright © Stéphane Lepin 2020</Copyright>
-    <AssemblyVersion>4.8.0.2</AssemblyVersion>
-    <FileVersion>4.8.0.2</FileVersion>
-    <Authors />
-    <Company />
+    <Version>1.0.1</Version>
+    <Copyright>Copyright © NoRV 2020</Copyright>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <FileVersion>1.0.1.0</FileVersion>
+    <Authors>DropLET</Authors>
+    <Company>NoRV</Company>
+    <PackageId>norv-obs-websocket-dotnet-wrapper</PackageId>
+    <Product>NoRV OBS WebSocket C# Wrapper</Product>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>bin\Debug\</OutputPath>
