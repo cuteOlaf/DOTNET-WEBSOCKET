@@ -33,6 +33,7 @@ using OBSWebsocketDotNet.Types;
 using Newtonsoft.Json;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.IO;
 
 namespace OBSWebsocketDotNet
 {
@@ -372,27 +373,32 @@ namespace OBSWebsocketDotNet
             if (!e.IsText)
                 return;
 
-            JObject body = JObject.Parse(e.Data);
-
-            if (body["message-id"] != null)
+            try
             {
-                // Handle a request :
-                // Find the response handler based on
-                // its associated message ID
-                string msgID = (string)body["message-id"];
 
-                if (_responseHandlers.TryRemove(msgID, out TaskCompletionSource<JObject> handler))
+                JObject body = JObject.Parse(e.Data);
+
+                if (body.ContainsKey("message-id") && body["message-id"] != null)
                 {
-                    // Set the response body as Result and notify the request sender
-                    handler.SetResult(body);
+                    // Handle a request :
+                    // Find the response handler based on
+                    // its associated message ID
+                    string msgID = (string)body["message-id"];
+
+                    if (_responseHandlers.TryRemove(msgID, out TaskCompletionSource<JObject> handler))
+                    {
+                        // Set the response body as Result and notify the request sender
+                        handler.SetResult(body);
+                    }
+                }
+                else if (body.ContainsKey("update-type") && body["update-type"] != null)
+                {
+                    // Handle an event
+                    string eventType = body["update-type"].ToString();
+                    ProcessEventType(eventType, body);
                 }
             }
-            else if (body["update-type"] != null)
-            {
-                // Handle an event
-                string eventType = body["update-type"].ToString();
-                ProcessEventType(eventType, body);
-            }
+            catch { }
         }
 
         /// <summary>
@@ -436,7 +442,9 @@ namespace OBSWebsocketDotNet
             // Send the message and wait for a response
             // (received and notified by the websocket response handler)
             WSConnection.Send(body.ToString());
-            tcs.Task.Wait();
+
+            if (!tcs.Task.Wait(WSTimeout == null ? TimeSpan.FromMilliseconds(1000) : WSTimeout))
+                throw new ErrorResponseException("Request canceled");
 
             if (tcs.Task.IsCanceled)
                 throw new ErrorResponseException("Request canceled");
